@@ -25,4 +25,9 @@
   (list (make-line)(make-line)(make-line)
 	(make-line)(make-line)(make-line)
 	(make-line)(make-line)(make-line)))
+
+(defparameter greed (greed-maker))
+
+(defun remove-possibility(i j val)
+  (setq greed (remove val (cdr (nth j (nth i greed))))))
 	
