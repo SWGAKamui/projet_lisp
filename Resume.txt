@@ -1,0 +1,23 @@
+﻿Fait
+Création d'une classe Ccase avec 
+une valeur initiale 
+une valeur actuelle 
+une liste de possibilité 
+un nombre de possibilité le nombre permet d'éviter de vérifier à chaque fois la taille de la liste de possibilité.
+Création d'un print-object qui m'affiche toutes ces valeurs
+Création de rem-possibilite qui supprime un nombre dans une case
+Création de clear-possibilite qui supprime toute les possibilités (utile lors de l'initialisation)
+Création de clean-possibilite qui supprime un nombre des possibilités de la ligne, de la colonne et du bloc
+Création d'une fonction de création de case
+Création d'une grille
+Création du solveur
+Création d'une fonction qui modifie une valeur actuelle (utile pour remplir la grille soit même)
+Création d'une fonction sudoku qui va créer une grille et l'initialiser avec une grille passée en paramètre
+Création d'une fonction solve-grille qui va être appelé pour résoudre les grilles prédéfini par la prof
+A faire
+Chargement d'une grille j'ai déjà ajouté certains appels en commentaire et la double boucle for
+Affichage d'une grille soit avec un print soit avec l'api
+Remplissage à la main soit dans terminal soit dans l'api
+Bonus track l'algo d'axel pour créer nous-même des grilles (ça plus l'api ça permettra de booster le nombre de points je pense)
+Vérifier sous quel format rendre à la prof si c'est juste le fichier ou s'il faut en plus un rapport ou autre joyeuseté.
+

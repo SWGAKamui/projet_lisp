@@ -4,8 +4,7 @@
   ((val-init :initarg :val-init :accessor val-init-of)
    (val-actu :initarg :val-actu :accessor val-actu-of)
    (possibilite :initarg :possibilite :accessor possibilite-of)
-   (nb-pos :initarg :nb-pos :accessor nb-pos-of)
-   
+   (nb-pos :initarg :nb-pos :accessor nb-pos-of)   
    )
   )
 ;;**Affichage de la classe
