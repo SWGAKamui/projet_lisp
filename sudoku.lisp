@@ -2,7 +2,7 @@
 ;;;***************CLASSE CASE***************;;;
 ;;;*****************************************;;;
 ;;**Définition de la classe**;;
-(defclass Ccase ()
+(defclass class_case ()
   ((val-init :initarg :val-init :accessor val-init-of)
    (val-actu :initarg :val-actu :accessor val-actu-of)
    (possibilite :initarg :possibilite :accessor possibilite-of)
@@ -24,7 +24,7 @@
   )
 
 ;;**Affichage de la classe**;;
-(defmethod print-object ((c Ccase) stream)
+(defmethod print-object ((c class_case) stream)
   (format stream "case : ~%Val-Init=~d Val-Actu=~d possibilité=~d Nb restante=~d"
 	  (val-init-of c)
 	  (val-actu-of c)
@@ -38,7 +38,7 @@
 ;;;********************************************************;;;
 ;;**Supprimer une possibilité d'une case**;;
 ;;On doit faire un setf pour le delete car si on supprime le premier élément delete n'est plus "destructif"
-(defmethod rem-possibilite (nombre (c Ccase))
+(defmethod rem-possibilite (nombre (c class_case))
   (when (member nombre (possibilite-of c))
     (setf (nb-pos-of c) (1- (nb-pos-of c)))
     (setf (possibilite-of c) (delete nombre (possibilite-of c)))
@@ -46,7 +46,7 @@
   )
 
 ;;**Supprimer toutes les possibilités d'une case**;;
-(defmethod clear-possibilite ((c Ccase))
+(defmethod clear-possibilite ((c class_case))
   (setf (possibilite-of c) nil)
   (setf (nb-pos-of c) 0)
   )
@@ -75,7 +75,7 @@
 ;;;*********************************************************;;;
 ;;**Création d'une case**;;
 (defun make-case (&key (val-init 0) (val-actu 0) (possibilite '(1 2 3 4 5 6 7 8 9)) (nb-pos 9))
-  (make-instance 'Ccase
+  (make-instance 'class_case
 		 :val-init val-init
 		 :val-actu val-actu
 		 :possibilite possibilite
@@ -118,7 +118,7 @@
 ;;On met la possibilité dans la valeur actuelle
 ;;on vide la liste de possibilité
 ;;on 
-(defun solver (grille)
+(defun solver (grille &key (once 0))
   (let* ((taille (array-dimension grille 0))
 	 (c (aref grille 0 0))
 	 (fini 0))
@@ -131,7 +131,7 @@
 	       ;;Une seule possibilité et on ne prend pas en compte les modifs du joueur
 	       (setf (val-actu-of c) (first (possibilite-of c)))
 	       (clear-possibilite c)
-	       (setq fini 0)
+	       (if (= 1 once) (setq fini 0))
 	       (clean-possibilite grille (val-actu-of c) i j)
 	       )
 	     )
@@ -145,11 +145,17 @@
 ;;;***************FONCTIONS FINALE***************;;;
 ;;;**********************************************;;;
 ;;**Affiche la grille**;;
-(defun print-grille (grille)
+(defun print-grille () ;(grille)
   ;;acces à une case : c = (aref grille ligne colonne)
   ;;acces à la valeur actuelle valeur = (val-actu-of c)
   ;;En une suele ligne (val-actu-of (aref grille lig col))
-  )
+        (format t "******~C"#\linefeed)
+  (dotimes (i 9 (1+ i))
+    (format t "*   ~D |~C"0 #\linefeed )
+    (if (= i 8)
+	(format t "******~C"#\linefeed)
+	(format t "*-----~C"#\linefeed)
+      )))
 
 ;;**Modifie une valeur actuelle à voir avec l'api**;;
 (defun modif-valeur (grille nombre lig col)
