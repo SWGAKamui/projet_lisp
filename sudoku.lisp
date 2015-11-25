@@ -1,3 +1,5 @@
+(defparameter +n+ 3);;Facteur d'origine d'un sudoku
+(defparameter +taille+ 9);;taille d'origine d'un sudoku
 ;;;*****************************************;;;
 ;;;***************CLASSE CASE***************;;;
 ;;;*****************************************;;;
@@ -53,17 +55,15 @@
 
 ;;**Supprimer un nombre sur toute la ligne colonne et groupe de case.**;;
 (defun clean-possibilite (grille nombre lig col)
-  (let* ((taille (array-dimension grille 0))
-	 (facteur (isqrt taille))
-	 (modl (* (floor lig facteur) facteur))
-	 (modc (* (floor col facteur) facteur))
+  (let* ((modl (* (floor lig +n+) +n+))
+	 (modc (* (floor col +n+) +n+))
 	 )
-    (dotimes (l taille t)
+    (dotimes (l +taille+ t)
       (rem-possibilite nombre (aref grille lig l))
       (rem-possibilite nombre (aref grille l col))
       )
-    (dotimes (bl (1- facteur) t)
-      (dotimes (bc (1- facteur) t)
+    (dotimes (bl (1- +n+) t)
+      (dotimes (bc (1- +n+) t)
 	(rem-possibilite nombre (aref grille (+ bl modl) (+ bc modc)))
 	)
       )
@@ -85,15 +85,25 @@
 ;;**Création d'une grille vide de facteur^4 ou taille^2 cases**;;
 ;;Exemple de création de grille sudoku (defparameter *t* (make-grille :facteur 3))
 (defun make-grille (&key (facteur 0) (taille 0))
-  (if (zerop facteur)
-      (if (zerop taille)
-	  (format t "N'importe quoi")
-	  (make-array (list taille taille) :initial-element (make-case))
+  (unless (and (zerop facteur) (zerop taille))
+    (if (zerop taille)
+	(unless (= 3 facteur)
+	  (setq +n+ facteur)
+	  (setq +taille+ (* facteur facteur))
 	  )
-      (let ((dim (* facteur facteur)))
-	(make-array (list dim dim) :initial-element (make-case))
+	(unless (= 9 taille)
+	  (setq +n+ (isqrt taille))
+	  (setq +taille+ taille)
+	  )
+	)
+    (let ((grille (make-array (list +taille+ +taille+))))
+      (dotimes (a +taille+ grille)
+	(dotimes (b +taille+ t)
+	  (setf (aref grille a b) (make-case))
+	  )
 	)
       )
+    )
   )
 
 ;;**Chargement d'une grille de sudoku**;;
@@ -119,19 +129,18 @@
 ;;on vide la liste de possibilité
 ;;on 
 (defun solver (grille &key (once 0))
-  (let* ((taille (array-dimension grille 0))
-	 (c (aref grille 0 0))
+  (let* ((c (aref grille 0 0))
 	 (fini 0))
     (loop while (zerop fini) do 
 	 (setq fini 1)
-	 (dotimes (i taille t)
-	   (dotimes (j taille t)
+	 (dotimes (i +taille+ t)
+	   (dotimes (j +taille+ t)
 	     (setq c (aref grille i j))
 	     (when (and (zerop (val-init-of c)) (= 1 (nb-pos-of c)))
 	       ;;Une seule possibilité et on ne prend pas en compte les modifs du joueur
 	       (setf (val-actu-of c) (first (possibilite-of c)))
 	       (clear-possibilite c)
-	       (if (= 1 once) (setq fini 0))
+	       (unless (= 1 once) (setq fini 0))
 	       (clean-possibilite grille (val-actu-of c) i j)
 	       )
 	     )
@@ -139,11 +148,14 @@
 	 )
     )
   )
-
-(defparameter n 3)
-
-
-
+;;;TEMP CREATION
+(defun tmp-fill (grille)
+  (dotimes (a +taille+ t)
+    (dotimes (b +taille+ t)
+      (modif-valeur grille (random 10) a b) 
+      )
+    )
+  )
 ;;;**********************************************;;;
 ;;;***************FONCTIONS FINALE***************;;;
 ;;;**********************************************;;;
@@ -153,46 +165,57 @@
   ;;acces à la valeur actuelle valeur = (val-actu-of c)
   ;;En une suele ligne (val-actu-of (aref grille lig col))
   
-  (line-star )
+  (line-star)
   (format t "~C" #\linefeed)
-  (dotimes (lig (* n n) (1+ lig))
+  (dotimes (lig (* +n+ +n+) t)
     (line-number grille lig)
     (cond
       ((= lig 8) (line-star))
-      ((= (1- (* 2 n)) lig)(line-star ))
-      ((= (1- n) lig)(line-star ))
-		(t (line-normal )))
+      ((= (1- (* 2 +n+)) lig)(line-star ))
+      ((= (1- +n+) lig)(line-star ))
+      (t (line-normal ))
+      )
     (format t "~C" #\linefeed)
-  t))
+    )
+  )
+
 (defun line-number (grille lig)
-  (setq tmp 5)
-  (dotimes (col (* n n) (1+ col))
-    (if (zerop tmp)
-	(cond
-	  ((zerop col) (format t "***     |" ))
-	  ((= (1- n) col) (format t "     ***" ))
-	  ((= col (1- (* 2 n))) (format t "     ***"))
-	  ((= col (1- (* n n)))(format t "     ***" ))
-	  (t (format t "     |" )))
-	(cond
-	  ((zerop col)(format t "***  ~D  |"tmp))
-	  ((= (1- n) col)(format t "  ~D  ***"tmp))
-	  ((= col (1- (* 2 n)))(format t "  ~D  ***"tmp))
-	  ((= col (1- (* n n)))(format t "  ~D  ***"tmp))
-	  (t (format t "  ~D  |"tmp)))))
-  (format t "~C" #\linefeed))
+  (let ((tmp (val-actu-of (aref grille lig 0))))
+    (dotimes (col (* +n+ +n+) t)
+      (setf tmp (val-actu-of (aref grille lig col)))
+      (if (zerop tmp)
+	  (cond
+	    ((zerop col) (format t "***     |" ))
+	    ((= (1- n) col) (format t "     ***" ))
+	    ((= col (1- (* 2 +n+))) (format t "     ***"))
+	    ((= col (1- (* +n+ +n+)))(format t "     ***" ))
+	    (t (format t "     |" ))
+	    )
+	  (cond
+	    ((zerop col)(format t "***  ~D  |"tmp))
+	    ((= (1- n) col)(format t "  ~D  ***"tmp))
+	    ((= col (1- (* 2 +n+)))(format t "  ~D  ***"tmp))
+	    ((= col (1- (* +n+ +n+)))(format t "  ~D  ***"tmp))
+	    (t (format t "  ~D  |"tmp)))
+	  )
+      )
+    )
+  (format t "~C" #\linefeed)
+  )
 
 (defun line-star ()
-       (dotimes (i (* n n) (1+ i))
-	 (format t "*******")))
+  (dotimes (i (* +n+ +n+) t)
+    (format t "*******"))
+  )
 (defun line-normal()
-  (dotimes (i (1- (* n n)) (1+ i))
+  (dotimes (i (* +n+ +n+) t)
     (cond
       ((zerop i)(format t "***-----"))
-      ((= n i)(format t "***-----"))
-      ((= i (* 2 n))(format t "***-----"))
-      ((= i (1- (* n n)))(format t "*-----***"))
-      (t (format t "*-----") ))))
+      ((= +n+ i)(format t "***-----"))
+      ((= i (* 2 +n+))(format t "***-----"))
+      ((= i (1- (* +n+ +n+)))(format t "*-----***"))
+      (t (format t "*-----") )))
+  )
 
 ;;**Modifie une valeur actuelle à voir avec l'api**;;
 (defun modif-valeur (grille nombre lig col)
