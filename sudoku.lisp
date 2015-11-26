@@ -43,7 +43,7 @@
 (defmethod rem-possibilite (nombre (c class_case))
   (when (member nombre (possibilite-of c))
     (setf (nb-pos-of c) (1- (nb-pos-of c)))
-    (setf (possibilite-of c) (delete nombre (possibilite-of c)))
+    (setf (possibilite-of c) (remove nombre (possibilite-of c)))
     )
   )
 
@@ -62,8 +62,9 @@
       (rem-possibilite nombre (aref grille lig l))
       (rem-possibilite nombre (aref grille l col))
       )
-    (dotimes (bl (1- +n+) t)
-      (dotimes (bc (1- +n+) t)
+
+    (dotimes (bl +n+ t)
+      (dotimes (bc +n+ t)
 	(rem-possibilite nombre (aref grille (+ bl modl) (+ bc modc)))
 	)
       )
@@ -107,14 +108,17 @@
   )
 
 ;;**Chargement d'une grille de sudoku**;;
-(defun load-grille (grille)
-  (let* ((taille (array-dimension grille 0))
-	 (notre-grille (make-grille :taille taille)))
-    (dotimes (u taille t)
-      (dotimes (v taille t)
-	;;unless (zerop grille[u][v])
-	;;notre-grille[u][v]=grille[u][v]
-	;;cleam-possibilite notre-grille grille[u][v] u v	 
+(defun load-grille (notre-grille grille)
+  (let ((cur-val (aref grille 0 0)))
+    
+    (dotimes (u +taille+ t)
+      (dotimes (v +taille+ t)
+	(setq cur-val (aref grille u v))
+	(unless (zerop cur-val)
+	  (modif-valeur notre-grille cur-val u v)
+	  (modif-valeur-init notre-grille cur-val u v)
+	  (clean-possibilite notre-grille cur-val u v)
+	  )
 	)
       )
     ;;cela va dépendre de comment sont données les grilles si c'est des tableaux a deux dimensions, une liste a une dimension.... A vérifier pour chaque vlaeur différente de 0 on les enlève des possibilité
@@ -139,21 +143,12 @@
 	     (when (and (zerop (val-init-of c)) (= 1 (nb-pos-of c)))
 	       ;;Une seule possibilité et on ne prend pas en compte les modifs du joueur
 	       (setf (val-actu-of c) (first (possibilite-of c)))
-	       (clear-possibilite c)
-	       (unless (= 1 once) (setq fini 0))
 	       (clean-possibilite grille (val-actu-of c) i j)
+	       (unless (= 1 once) (setq fini 0))
 	       )
 	     )
 	   )
 	 )
-    )
-  )
-;;;TEMP CREATION
-(defun tmp-fill (grille)
-  (dotimes (a +taille+ t)
-    (dotimes (b +taille+ t)
-      (modif-valeur grille (random 10) a b) 
-      )
     )
   )
 ;;;**********************************************;;;
@@ -186,14 +181,14 @@
       (if (zerop tmp)
 	  (cond
 	    ((zerop col) (format t "***     |" ))
-	    ((= (1- n) col) (format t "     ***" ))
+	    ((= (1- +n+) col) (format t "     ***" ))
 	    ((= col (1- (* 2 +n+))) (format t "     ***"))
 	    ((= col (1- (* +n+ +n+)))(format t "     ***" ))
 	    (t (format t "     |" ))
 	    )
 	  (cond
 	    ((zerop col)(format t "***  ~D  |"tmp))
-	    ((= (1- n) col)(format t "  ~D  ***"tmp))
+	    ((= (1- +n+) col)(format t "  ~D  ***"tmp))
 	    ((= col (1- (* 2 +n+)))(format t "  ~D  ***"tmp))
 	    ((= col (1- (* +n+ +n+)))(format t "  ~D  ***"tmp))
 	    (t (format t "  ~D  |"tmp)))
@@ -221,11 +216,19 @@
 (defun modif-valeur (grille nombre lig col)
   (setf (val-actu-of (aref grille lig col)) nombre)
   )
+(defun modif-valeur-init (grille nombre lig col)
+  (setf (val-init-of (aref grille lig col)) nombre)
+  (clear-possibilite (aref grille lig col))
+  )
 ;;**Sudoku créé la grille, charge la grille donnée et initialise les possibilités**;;
 (defun sudoku (grille)
   (let* ((taille (array-dimension grille 0))
 	 (notre-grille (make-grille :taille taille)))
-    (load-grille notre-grille)
+    (unless (= 9 taille)
+      (setq +n+ (isqrt taille))
+      (setq +taille+ taille)
+      )
+    (load-grille notre-grille grille)
     )
   )
 
